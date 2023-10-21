@@ -27,16 +27,22 @@ namespace RestaurantRaterDotAPI.Controllers
 
         // Async GET Endpoint
         [HttpGet]
-        public async Task<IActionResult> GetRestaurants()
+        public async Task<IActionResult> GetAllRestaurants()
         {
-            List<Restaurant> restaurants = await _context.Restaurants.ToListAsync();
-            return Ok(restaurants);
+            var restaurants = await _context.Restaurants.Include(ref => r.Ratings).ToListAsync()
+            List<RestaurantListItem> restaurantList = restaurantsdata.Select(ref => new RestaurantListItem() {
+                Id = r.Id,
+                Name = r.Name,
+                Location = r.Location,
+                AverageScore = r.AverageScore,
+            }).ToList();
+            return Ok(restaurantList);
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetRestaurantById(int id)
         {
-            Restaurant? restaurant = await _context.Restaurants.FindAsync(id);
+            var restaurant = await _context.Restaurants.Include(ref => r.Ratings).FirstOrDefaultAsync(r => r.Id == id);
             if (restaurant is null)
             {
                 return NotFound();
