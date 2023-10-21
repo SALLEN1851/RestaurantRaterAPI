@@ -1,15 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;   // for List<>
-using System.Threading.Tasks;       // for async and Task<>
-using Microsoft.EntityFrameworkCore; // for Entity Framework methods like ToListAsync()
+using System.Collections.Generic;   
+using System.Threading.Tasks;       
+using Microsoft.EntityFrameworkCore; 
+using RestaurantRaterDotAPI.Data;
 
+namespace RestaurantRaterDotAPI.Models
+{
+    public class RatingRequest
+    {
+        public float Score { get; set; }
+        public int RestaurantId { get; set; }
+    }
+}
 namespace RestaurantRaterDotAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class RestaurantController : ControllerBase 
     {
-        private readonly RestaurantDbContext _context;
+        public readonly RestaurantDbContext _context;
 
         public RestaurantController(RestaurantDbContext context)
         {
@@ -37,7 +46,7 @@ namespace RestaurantRaterDotAPI.Controllers
 
         // Async POST Endpoint
         [HttpPost]
-        public async Task<IActionResult> PostRestaurant(Restaurant request) // I assumed you need an input parameter of type 'Restaurant' for this endpoint
+        public async Task<IActionResult> PostRestaurant(Restaurant request)
         {
             if (ModelState.IsValid)
             {
@@ -48,5 +57,44 @@ namespace RestaurantRaterDotAPI.Controllers
 
             return BadRequest(ModelState);
         }
+
+
+        // Async PUT Endpoint
+        [HttpPut]
+        public async Task<IActionResult> PutRestaurant([FromBody] Restaurant request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Restaurant? restaurant = await _context.Restaurants.FindAsync(request.Id);
+            if (restaurant is null)
+            {
+                return NotFound();
+            }
+
+            restaurant.Name = request.Name;
+            restaurant.Location = request.Location;
+
+            _context.Restaurants.Update(restaurant);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        // Async DELETE Endpoint
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteRestaurant(int id)
+        {
+            var restaurant = await _context.Restaurants.FindAsync(id);
+            if (restaurant is null)
+            {
+                return NotFound();
+            }
+
+            _context.Restaurants.Remove(restaurant);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+      }
     }
-}
