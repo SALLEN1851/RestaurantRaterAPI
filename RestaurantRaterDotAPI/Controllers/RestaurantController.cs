@@ -29,12 +29,12 @@ namespace RestaurantRaterDotAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllRestaurants()
         {
-            var restaurants = await _context.Restaurants.Include(ref => r.Ratings).ToListAsync()
-            List<RestaurantListItem> restaurantList = restaurantsdata.Select(ref => new RestaurantListItem() {
+            var restaurants = await _context.Restaurants.Include(r => r.Ratings).ToListAsync();
+            List<RestaurantListItem> restaurantList = restaurants.Select(r => new RestaurantListItem() {
                 Id = r.Id,
                 Name = r.Name,
                 Location = r.Location,
-                AverageScore = r.AverageScore,
+                // AverageScore = r.AverageScore,
             }).ToList();
             return Ok(restaurantList);
         }
@@ -42,7 +42,7 @@ namespace RestaurantRaterDotAPI.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetRestaurantById(int id)
         {
-            var restaurant = await _context.Restaurants.Include(ref => r.Ratings).FirstOrDefaultAsync(r => r.Id == id);
+            var restaurant = await _context.Restaurants.Include(r => r.Ratings).FirstOrDefaultAsync(r => r.Id == id);
             if (restaurant is null)
             {
                 return NotFound();
